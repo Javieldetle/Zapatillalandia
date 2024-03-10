@@ -1,8 +1,53 @@
-<!doctype html>
-<html>
+<?php
+session_start();
+include "header.php";
+?>
+<!DOCTYPE html>
+<html lang="en">
+
   <head>
+ <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras</title>
+
 
     <style>
+        #payment-form {
+            width: 100%;
+            max-width: 800px; /* Ancho máximo del formulario para evitar que se estire demasiado */
+        }
+
+        /* Estilos para los elementos del formulario Stripe */
+        .StripeElement {
+            background-color: white;
+            height: 40px;
+            padding: 20px 12px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            box-shadow: 0 1px 3px 0 #e6ebf1;
+            -webkit-transition: box-shadow 150ms ease;
+            transition: box-shadow 150ms ease;
+            margin-bottom: 10px;
+        }
+
+        .StripeElement--focus {
+            box-shadow: 0 1px 3px 0 #cfd7df;
+        }
+
+        .StripeElement--invalid {
+            border-color: #fa755a;
+        }
+
+        .StripeElement--webkit-autofill {
+            background-color: #fefde5 !important;
+        }
+
+        #card-errors {
+            color: #fa755a;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
       .StripeElement {
         background-color: white;
         height: 40px;
@@ -30,6 +75,7 @@
     <script src="https://js.stripe.com/v3/"></script>
   </head>
   <body>
+  <div class="col-md-9 order-md-2" style="text-align:left;">
     <form action="crearcargo.php" method="post" id="payment-form">
       <div class="form-row">
         <label for="card-element">
@@ -117,6 +163,11 @@
         // Submit the form
         form.submit();
       }
-    </script>
+    </script></div>
+    <?php
+
+include "fooder.php";
+?>
+    
   </body>
 </html>

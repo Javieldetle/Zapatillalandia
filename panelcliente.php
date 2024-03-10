@@ -1,3 +1,34 @@
+<?php
+session_start();
+
+require_once 'conexion.php'; // Incluir el archivo de conexión
+require_once 'mostrar_imagenes.php'; // Incluir el archivo mostrar_imagenes.php
+
+// Iniciar la sesión si no está activa
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Verificar si hay una sesión iniciada
+if (!isset($_SESSION['nombre_usuario'])) {
+    // Si no hay una sesión iniciada, redirigir a la página de inicio de sesión
+    header("Location: index.php");
+    exit(); // Salir del script
+}
+
+// Crear una instancia de la clase Database
+$database = new Database();
+
+// Obtener la conexión
+$conn = $database->getConnection();
+
+// Verificar si la conexión se estableció correctamente
+if (!$conn) {
+    echo "Error al conectar a la base de datos";
+    exit(); // Salir del script si hay un error en la conexión
+}
+
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -51,7 +82,112 @@
             /* Altura ajustada automáticamente para mantener la proporción */
 
         }
+
+        .user-details {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .user-details th,
+        .user-details td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .user-details th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+
+        .user-details tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        form {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+
+
+            align-items: center;
+
+            margin-left: 650px;
+        }
+
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+
+        h2 {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="reset"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .styled-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.styled-button:hover {
+    background-color: #0056b3;
+}
     </style>
+    <script>
+        function clearForm() {
+            document.getElementById("nombre").value = "";
+            document.getElementById("apellido").value = "";
+            document.getElementById("direccion").value = "";
+            document.getElementById("localidad").value = "";
+            document.getElementById("provincia").value = "";
+            document.getElementById("telefono").value = "";
+            document.getElementById("email").value = "";
+        }
+    </script>
 </head>
 
 <body>
@@ -197,14 +333,104 @@
                 </aside>
             </div>
             <div class="col-md-8">
+
+                <!-- Mostrar todos los usuarios -->
+                <h3>Datos del Usuario</h3>
                 <?php
-               
-               
+                // Verificar si hay una sesión iniciada
+
+                if (isset($_SESSION['dni_usuario'])) {
+                    // Obtener el ID del usuario conectado en sesión
+                    $dni_usuario = $_SESSION['dni_usuario'];
+
+                    // Incluir el archivo de conexión a la base de datos
+                    require_once 'conexion.php';
+
+                    // Crear una instancia de la clase Database
+                    $database = new Database();
+
+                    // Obtener la conexión
+                    $conn = $database->getConnection();
+
+                    // Verificar si la conexión se estableció correctamente
+                    if (!$conn) {
+                        echo "Error al conectar a la base de datos";
+                        exit(); // Salir del script si hay un error en la conexión
+                    }
+
+                    // Consultar los datos del usuario conectado en sesión
+                    $stmt = $conn->prepare("SELECT * FROM usuarios WHERE dni = :dni_usuario");
+                    $stmt->bindParam(':dni_usuario', $dni_usuario);
+                    $stmt->execute();
+                    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                    // Verificar si se encontraron los datos del usuario
+                    if ($usuario) {
+                        // Mostrar los datos del usuario en una tabla
+
+                    } else {
+                        // Si no se encontraron datos del usuario, mostrar un mensaje de error
+                        echo "No se encontraron datos del usuario";
+                    }
+                    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+                        // Verificar si se enviaron los datos necesarios
+                        if (isset($_POST['nombre']) && isset($_POST['apellido']) && isset($_POST['direccion']) && isset($_POST['localidad']) && isset($_POST['provincia']) && isset($_POST['telefono']) && isset($_POST['email'])) {
+                            // Preparar la consulta SQL para actualizar los datos del usuario
+                            $query = "UPDATE usuarios SET nombre = :nombre, apellido = :apellido, direccion = :direccion, localidad = :localidad, provincia = :provincia, telefono = :telefono, email = :email WHERE dni = :dni";
+
+                            // Preparar y ejecutar la consulta
+                            $stmt = $conn->prepare($query);
+                            $stmt->bindParam(':nombre', $_POST['nombre']);
+                            $stmt->bindParam(':apellido', $_POST['apellido']);
+                            $stmt->bindParam(':direccion', $_POST['direccion']);
+                            $stmt->bindParam(':localidad', $_POST['localidad']);
+                            $stmt->bindParam(':provincia', $_POST['provincia']);
+                            $stmt->bindParam(':telefono', $_POST['telefono']);
+                            $stmt->bindParam(':email', $_POST['email']);
+                            $stmt->bindParam(':dni', $dni_usuario);
+
+                            // Ejecutar la consulta
+                            if ($stmt->execute()) {
+                                // Actualizar los datos en la sesión
+                                $_SESSION['nombre'] = $_POST['nombre'];
+                                $_SESSION['apellido'] = $_POST['apellido'];
+                                $_SESSION['direccion'] = $_POST['direccion'];
+                                $_SESSION['localidad'] = $_POST['localidad'];
+                                $_SESSION['provincia'] = $_POST['provincia'];
+                                $_SESSION['telefono'] = $_POST['telefono'];
+                                $_SESSION['email'] = $_POST['email'];
+
+                                // Redirigir para evitar el reenvío del formulario
+
+                            } else {
+                                // Mostrar mensaje de error si la actualización falla
+                                $mensaje = "Error al actualizar los datos. Por favor, inténtalo de nuevo.";
+                            }
+                        } else {
+                            // Mostrar mensaje de error si no se enviaron todos los datos necesarios
+                            $mensaje = "Por favor, completa todos los campos del formulario.";
+                        }
+                    }
+
+                    // Obtener los datos del usuario de la sesión
+                    $nombre = $_SESSION['nombre'] ?? '';
+                    $apellido = $_SESSION['apellido'] ?? '';
+                    $direccion = $_SESSION['direccion'] ?? '';
+                    $localidad = $_SESSION['localidad'] ?? '';
+                    $provincia = $_SESSION['provincia'] ?? '';
+                    $telefono = $_SESSION['telefono'] ?? '';
+                    $email = $_SESSION['email'] ?? '';
+                }
+                ?>
+
+                <?php
+
+
 
                 // Verificar si el usuario ya inició sesión
                 if (!isset($_SESSION['nombre_usuario'])) {
                     // Redirigir al usuario al formulario de inicio de sesión si no ha iniciado sesión
-                    header("Location: iniciar_sesion.php");
+                    header("Location: index.php");
                     exit(); // Asegurar que el script se detenga después de redirigir
                 }
 
@@ -299,9 +525,48 @@
                         echo "Por favor, completa todos los campos del formulario.";
                     }
                 }
-                ?>
+                ?><!-- Mostrar los detalles del usuario en una tabla -->
+                <?php if (isset($usuario)) : ?>
+                    <table class='user-details'>
+                        <tr>
+                            <th colspan='2'>Detalles del Usuario</th>
+                        </tr>
+                        <tr>
+                            <td>Nombre:</td>
+                            <td><?php echo $usuario['nombre']; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Apellido:</td>
+                            <td><?php echo $usuario['apellido']; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Dirección:</td>
+                            <td><?php echo $usuario['direccion']; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Localidad:</td>
+                            <td><?php echo $usuario['localidad']; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Provincia:</td>
+                            <td><?php echo $usuario['provincia']; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Teléfono:</td>
+                            <td><?php echo $usuario['telefono']; ?></td>
+                        </tr>
+                        <tr>
+                            <td>Email:</td>
+                            <td><?php echo $usuario['email']; ?></td>
+                        </tr>
+                    </table>
+                <?php endif; ?>
 
                 <h2>Modificar Datos de Perfil</h2>
+                <!-- Mostrar mensaje de éxito o error si es necesario -->
+                <?php if (isset($mensaje)) : ?>
+                    <p><?php echo $mensaje; ?></p>
+                <?php endif; ?>
 
                 <!-- Formulario para modificar los datos del perfil -->
                 <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
@@ -320,43 +585,34 @@
                     <label for="email">Email:</label><br>
                     <input type="email" id="email" name="email" value="<?php echo isset($_SESSION['email']) ? $_SESSION['email'] : ''; ?>"><br><br>
                     <input type="submit" name="submit" value="Actualizar Perfil">
-                </form>
+                    
 
-                <!-- Tabla para mostrar los datos actuales del perfil -->
-                <table border="1">
-                    <tr>
-                        <th>Campo</th>
-                        <th>Dato Actual</th>
-                    </tr>
-                    <tr>
-                        <td>Nombre</td>
-                        <td><?php echo isset($_SESSION['nombre']) ? $_SESSION['nombre'] : ''; ?></td>
-                    </tr>
-                    <tr>
-                        <td>Apellido</td>
-                        <td><?php echo isset($_SESSION['apellido']) ? $_SESSION['apellido'] : ''; ?></td>
-                    </tr>
-                    <tr>
-                        <td>Dirección</td>
-                        <td><?php echo isset($_SESSION['direccion']) ? $_SESSION['direccion'] : ''; ?></td>
-                    </tr>
-                    <tr>
-                        <td>Localidad</td>
-                        <td><?php echo isset($_SESSION['localidad']) ? $_SESSION['localidad'] : ''; ?></td>
-                    </tr>
-                    <tr>
-                        <td>Provincia</td>
-                        <td><?php echo isset($_SESSION['provincia']) ? $_SESSION['provincia'] : ''; ?></td>
-                    </tr>
-                    <tr>
-                        <td>Teléfono</td>
-                        <td><?php echo isset($_SESSION['telefono']) ? $_SESSION['telefono'] : ''; ?></td>
-                    </tr>
-                    <tr>
-                        <td>Email</td>
-                        <td><?php echo isset($_SESSION['email']) ? $_SESSION['email'] : ''; ?></td>
-                    </tr>
-                </table>
+                    <?php
+                    // Verificar si se ha actualizado el formulario
+                    if (isset($_SESSION['formulario_actualizado']) && $_SESSION['formulario_actualizado']) {
+                        // Restablecer el indicador
+                        $_SESSION['formulario_actualizado'] = false;
+                        // Mostrar el botón de limpiar solo si el formulario se ha actualizado
+                        echo '<input type="reset" value="Limpiar Campos" onclick="clearForm()">';
+                    }
+                    ?>
+                </form>
+                <form action="dardebaja.php" method="post">
+                        <input type="hidden" name="user" value="<?php echo $_SESSION['dni_usuario']; ?>">
+                        <button type="submit" name="submit" class="styled-button">Dar de baja cuenta</button>
+                    </form>
+                <script>
+                    function clearForm() {
+                        document.getElementById("nombre").value = "";
+                        document.getElementById("apellido").value = "";
+                        document.getElementById("direccion").value = "";
+                        document.getElementById("localidad").value = "";
+                        document.getElementById("provincia").value = "";
+                        document.getElementById("telefono").value = "";
+                        document.getElementById("email").value = "";
+                    }
+                </script>
+
             </div>
             <div class="col-md-2" style="border-left:1px solid #ccc;">
                 <aside>

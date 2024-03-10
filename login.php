@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Crear una instancia de la clase Database
         $database = new Database();
         $conn = $database->getConnection();
-        
+
         // Consulta SQL para verificar las credenciales
         $query = "SELECT * FROM usuarios WHERE nombre = :usuario";
 
@@ -52,12 +52,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Verificar si se encontró el usuario en la base de datos
         if ($row) {
+            if ($row['activo'] == 0) {
+                // La cuenta está desactivada, mostrar mensaje y salir
+                $error_msg = "Tu cuenta ha sido dada de baja. Por favor, contacta con el administrador.";
+                $_SESSION['error_msg'] = $error_msg;
+                header("Location: index.php");
+                exit();
+            }
             // Verificar si la contraseña ingresada coincide con la contraseña almacenada
             if ($clave === $row['clave']) { // Comparación de texto plano
                 // Las credenciales son correctas, iniciar sesión y redirigir al usuario
                 $_SESSION['nombre_usuario'] = $row['nombre'];
                 $_SESSION['dni_usuario'] = $row['dni'];
                 $_SESSION['rol'] = $row['rol'];
+
+
                 // Redirigir al usuario a la página correspondiente según su rol
                 switch ($row['rol']) {
                     case '1':
@@ -76,12 +85,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 exit();
             } else {
                 // La contraseña es incorrecta
-                echo "La contraseña es incorrecta. Inténtalo de nuevo.";
+                $error_msg = "La contraseña es incorrecta. Inténtalo de nuevo.";
+                // Devuelve este mensaje a index.php
+                $_SESSION['error_msg'] = $error_msg;
+                header("Location: index.php");
+                exit();
             }
         } else {
             // El usuario no fue encontrado en la base de datos
-            echo "<span style='font-size: larger;'>El usuario no existe. Por favor, regístrate.</span>";
-            header("refresh:5; url=registrar.php");
+            $error_msg = "El usuario no existe. Por favor, regístrate.";
+            $_SESSION['error_msg'] = $error_msg;
+            header("Location: index.php");
             exit(); // Asegurar que el script se detenga después de redirigir
         }
     } else {
@@ -89,4 +103,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "Por favor, ingresa tu nombre de usuario y contraseña.";
     }
 }
+
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<div class="error-message">
+    <?php
+    if (isset($_SESSION['error_msg'])) {
+        echo $_SESSION['error_msg'];
+        unset($_SESSION['error_msg']); // Limpia el mensaje de error después de mostrarlo
+    }
+    ?>
+</div>
+
+</body>
+</html>

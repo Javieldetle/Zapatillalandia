@@ -1,7 +1,7 @@
 <?php
-
+session_start();
 function verificarRol($rolPermitido) {
-    session_start();
+    
 
     // Verificar si el usuario ha iniciado sesión y tiene un rol asignado
     if (isset($_SESSION['nombre_usuario']) && isset($_SESSION['rol'])) {

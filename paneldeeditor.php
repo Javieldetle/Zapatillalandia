@@ -1,5 +1,6 @@
 <?php
-
+require_once 'funciones.php';
+verificarRol(2);
 require_once 'conexion.php'; // Incluir el archivo de conexión
 require_once 'mostrar_imagenes.php'; // Incluir el archivo mostrar_imagenes.php
 
@@ -41,6 +42,7 @@ if (!$conn) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
     </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="css/style.css">
     <link href='http://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
@@ -68,6 +70,58 @@ if (!$conn) {
         th {
             background-color: #f2f2f2;
         }
+
+        #tablainforme table th:last-child,
+#tablainforme table td:last-child {
+    display: none;
+}
+
+        header.container-fluid.py-3 {
+            display: none;
+        }
+
+        .botones-container {
+    margin: 20px 0; /* Margen superior e inferior */
+}
+.botones-container {
+    display: flex; /* Utilizar flexbox para alinear los botones */
+    justify-content: space-around; /* Alinear los elementos a los extremos */
+    margin-bottom: 10 px; /* Espacio entre los botones y el siguiente contenido */
+}
+
+.boton-container {
+    flex: 12; /* Que los botones ocupen el mismo espacio disponible */
+    margin-right: 10 px; /* Margen entre los botones */
+}
+#cancelarpedido,
+#mostrarInforme {
+    background-color: transparent; /* Fondo transparente */
+    border: 2px solid; /* Borde sólido */
+    padding:  20px; /* Padding interno */
+    border-radius: 4 px; /* Bordes redondeados */
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s; /* Transición suave */
+    width: 30 px; /* Ancho del botón, teniendo en cuenta el margen entre ellos */
+}
+
+#cancelarpedido {
+    border-color: red; /* Borde rojo */
+    color: white; /* Texto blanco */
+    background-color: red; /* Fondo rojo */
+}
+
+#mostrarInforme {
+    border-color: green; /* Borde verde */
+    color: white; /* Texto blanco */
+    background-color: green; /* Fondo verde */
+}
+
+#cancelarpedido:hover,
+#mostrarInforme:hover {
+    background-color: rgba(0, 128, 0, 0.8); /* Fondo verde al pasar el ratón */
+}
+
+
     </style>
 
 </head>
@@ -146,7 +200,7 @@ if (!$conn) {
 
     <section id="seccion2" class="container-fluid">
         <div class="row">
-            <div class="col-xs-8 col-sm-8 col-md-2" style="border-right:1px solid #ccc;">
+            <div class="col-xs-4 col-sm-4 col-md-2" style="border-right:1px solid #ccc;">
                 <aside>
                     <div class="accordion accordion-flush" id="accordionFlushExample">
                         <div class="accordion-item">
@@ -217,13 +271,13 @@ if (!$conn) {
                     </div>
                 </aside>
             </div>
-            <div class="col-xs-8 col-sm-8 col-md-8" style="text-align:center;">
+            <div class="col-xs-6 col-sm-6 col-md-8" style="text-align:center;">
                 <h1>Panel de Editor</h1>
 
 
 
                 <!-- Mostrar todos los usuarios -->
-                <h3>Usuarios Registrados</h3>
+
                 <?php
                 // Incluir el archivo de conexión a la base de datos
                 require_once 'conexion.php';
@@ -246,7 +300,7 @@ if (!$conn) {
                 $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 ?>
 
-                <h2>Lista de Usuarios</h2>
+                <h3>Lista de Usuarios</h3>
                 <table>
                     <thead>
                         <tr>
@@ -316,126 +370,165 @@ if (!$conn) {
                     return $stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
                 ?>
+           <div class="botones-container">
+    <form method="POST" action="tablapedidos.php">
+        <input type="hidden" name="cancelar_pedido" value="true">
+        <input type="hidden" name="id_pedido" value="ID_DEL_PEDIDO_A_CANCELAR"> <!-- Reemplaza ID_DEL_PEDIDO_A_CANCELAR por el ID real del pedido -->
+        <div class="boton-container">
+            <button type="submit" id="cancelarpedido">Cancelar Pedido</button>
+        </div>
+    </form>
+    <div class="boton-container">
+        <button id="mostrarInforme">Informe de Pedidos</button>
+    </div>
+</div>
 
+<!-- Contenedor para mostrar el informe de pedidos -->
+<div id="informePedidos"></div>
 
-                <section id="busqueda_articulo">
-                    <h2>Búsqueda de Artículo</h2>
-                    <!-- Formulario de Búsqueda de Artículo -->
-                    <form action="" method="get">
-                        <label for="busqueda">Buscar Artículo:</label>
-                        <input type="text" name="busqueda" id="busqueda" required>
-                        <input type="submit" value="Buscar">
-                    </form>
-                    <h2>Detalle del Artículo Seleccionado</h2>
-                    <!-- Código PHP para procesar la búsqueda y mostrar los resultados -->
-                    <?php
-                    // Conexión a la base de datos y consulta de artículos
-                    // Suponiendo que tienes un objeto $conn que representa la conexión a la base de datos
-                    if (isset($_GET['busqueda'])) {
-                        $busqueda = $_GET['busqueda'];
-                        $query = "SELECT a.codigo, a.nombre, a.descripcion, a.precio, a.imagen, c.codigo as codigo_categoria, c.nombre as nombre_categoria, s.codigo as codigo_subcategoria, s.nombre as nombre_subcategoria
+<script>
+    $(document).ready(function() {
+        // Función para cargar el contenido de tablapedidos.php al hacer clic en el botón
+        $("#mostrarInforme").click(function() {
+            // Usar AJAX para cargar el contenido de tablapedidos.php dentro del div informePedidos
+            $("#informePedidos").load("tablapedidos.php?informe=true");
+        });
+    });
+</script>
+           
+
+                    <div class="col-md-12" style="text-align:center;">
+                        <div class="card bg-light mb-3 w-100">
+                            <section id="busqueda_articulo">
+                                <h2>Búsqueda de Artículo</h2>
+                                <!-- Formulario de Búsqueda de Artículo -->
+                                <form action="" method="get">
+                                    <label for="busqueda">Buscar Artículo:</label>
+                                    <input type="text" name="busqueda" id="busqueda" required>
+                                    <input type="submit" value="Buscar">
+                                </form>
+
+                                <!-- Código PHP para procesar la búsqueda y mostrar los resultados -->
+                                <?php
+                                // Conexión a la base de datos
+                                require_once 'conexion.php'; // Asegúrate de incluir el archivo de conexión a la base de datos
+                                // Crear una instancia de la clase Database
+                                $database = new Database();
+
+                                // Obtener la conexión a la base de datos
+                                $conn = $database->getConnection();
+
+                                // Suponiendo que tienes un objeto $conn que representa la conexión a la base de datos
+                                if (isset($_GET['busqueda'])) {
+                                    $busqueda = $_GET['busqueda'];
+                                    $query = "SELECT a.codigo, a.nombre, a.descripcion, a.precio, a.imagen, c.codigo as codigo_categoria, c.nombre as nombre_categoria, s.codigo as codigo_subcategoria, s.nombre as nombre_subcategoria
                       FROM articulos a
                       LEFT JOIN categoria c ON a.categoria = c.codigo
                       LEFT JOIN subcategoria s ON a.subcategoria = s.codigo
                       WHERE a.nombre LIKE '%$busqueda%'";
-                        $result = $conn->query($query);
+                                    $result = $conn->query($query);
 
-                        // Mostrar resultados en forma de tabla
-                        if ($result) {
-                            if ($result->rowCount() > 0) {
-                                echo "<h3>Resultados de la búsqueda:</h3>";
-                                echo "<table border='1'>";
-                                echo "<tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Precio</th><th>Imagen</th><th>Categoría</th><th>Subcategoría</th></tr>";
-                                while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-                                    echo "<tr>";
-                                    echo "<td>" . $row['codigo'] . "</td>";
-                                    echo "<td>" . $row['nombre'] . "</td>";
-                                    echo "<td>" . $row['descripcion'] . "</td>";
-                                    echo "<td>" . $row['precio'] . "</td>";
+                                    // Mostrar resultados en forma de tabla
+                                    if ($result) {
+                                        if ($result->rowCount() > 0) {
+                                            echo "<h3>Resultados de la búsqueda:</h3>";
+                                            echo "<table border='1'>";
+                                            echo "<tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Precio</th><th>Imagen</th><th>Categoría</th><th>Subcategoría</th></tr>";
+                                            while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+                                                echo "<tr>";
+                                                echo "<td>" . $row['codigo'] . "</td>";
+                                                echo "<td>" . $row['nombre'] . "</td>";
+                                                echo "<td>" . $row['descripcion'] . "</td>";
+                                                echo "<td>" . $row['precio'] . "</td>";
 
-                                    // Obtener la ruta de la imagen usando la función definida en mostrar_imagenes.php
-                                    $ruta_imagen = obtenerRutaImagen($row['codigo_categoria'], $row['codigo_subcategoria'], $row['imagen']);
+                                                // Obtener la ruta de la imagen usando la función definida en mostrar_imagenes.php
+                                                $ruta_imagen = obtenerRutaImagen($row['codigo_categoria'], $row['codigo_subcategoria'], $row['imagen'], $conn);
 
-                                    // Mostrar la imagen en la tabla
-                                    echo "<td><img src=\"$ruta_imagen\" alt=\"Imagen del artículo\" width='100'></td>";
+                                                // Mostrar la imagen en la tabla
+                                                echo "<td><img src=\"$ruta_imagen\" alt=\"Imagen del artículo\" width='100'></td>";
 
-                                    // Mostrar categoría y subcategoría con su número y descripción
-                                    echo "<td>{$row['codigo_categoria']} - {$row['nombre_categoria']}</td>";
-                                    echo "<td>{$row['codigo_subcategoria']} - {$row['nombre_subcategoria']}</td>";
+                                                // Mostrar categoría y subcategoría con su número y descripción
+                                                echo "<td>{$row['codigo_categoria']} - {$row['nombre_categoria']}</td>";
+                                                echo "<td>{$row['codigo_subcategoria']} - {$row['nombre_subcategoria']}</td>";
 
-                                    echo "</tr>";
+                                                echo "</tr>";
+                                            }
+                                            echo "</table>";
+                                        } else {
+                                            echo "<p>No se encontraron resultados para la búsqueda: $busqueda</p>";
+                                        }
+                                    } else {
+                                        echo "Error en la consulta: " . $conn->errorInfo()[2]; // Muestra el mensaje de error de la consulta
+                                    }
                                 }
-                                echo "</table>";
-                            } else {
-                                echo "<p>No se encontraron resultados para la búsqueda: $busqueda</p>";
-                            }
+                                ?>
+                            </section></br>
+                            <!-- Formulario para el informe de pedidos -->
+
+
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-md-2">
+                    <aside>
+                        <?php
+                        // Verificar si hay una sesión iniciada
+                        if (isset($_SESSION['nombre_usuario'])) {
+                            // Si hay una sesión iniciada, mostrar el mensaje de bienvenida y el botón de logout
+                            echo "<div class='container'>";
+                            echo "<p class='fw-bold'>Bienvenido, " . $_SESSION['nombre_usuario'] . "</p>";
+                            echo "<p><a href='index.php' style='text-decoration: none; color: inherit;'><i class='fas fa-home'></i> Inicio</a></p>" . "<br>";
+                            echo "<form action='logout.php' method='post'>";
+                            echo "<button type='submit' class='btn btn-primary bg-golden border-0'>Cerrar sesión</button>";
+                            echo "</form>";
+                            echo "</div>";
                         } else {
-                            echo "Error en la consulta: " . $conn->errorInfo()[2]; // Muestra el mensaje de error de la consulta
+                            // Si no hay una sesión iniciada, mostrar el formulario de inicio de sesión
+                            echo "<div class='container'>";
+                            echo "<div class='mt-2'>";
+                            echo "<p class='fw-bold'>INICIA SESIÓN</p>";
+                            echo "<form action='login.php' method='post'>"; // Cambiar 'conexion.php' por 'login.php'
+                            echo "<div class='table-responsive'>";
+                            echo "<table align='center' class='table table-borderless'>";
+                            echo "<tr>";
+                            echo "<td colspan='2'>";
+                            echo "<span>Nombre:</span><br />";
+                            echo "<input type='text' name='user'>";
+                            echo "</td>";
+                            echo "</tr>";
+                            echo "<tr>";
+                            echo "<td colspan='2'>";
+                            echo "<span>Contraseña:</span><br />";
+                            echo "<input type='password' name='key'>";
+                            echo "</td>";
+                            echo "</tr>";
+                            echo "<tr>";
+                            echo "<td align='right'> <input type='submit' class='btn btn-primary bg-golden border-0' value='Enviar'> </td>";
+                            echo "<td align='left'> <input type='reset' class='btn btn-primary bg-golden border-0' value='Borrar'> </td>";
+                            echo "</tr>";
+                            echo "<tr>";
+                            echo "<td colspan='2'><a class='small text-dark' href='resetPassword.php'>¿Has olvidado tu contraseña?</a></td>";
+                            echo "</tr>";
+                            echo "</table>";
+                            echo "</div>";
+                            echo "<table align='center' width='100%' class='table table-borderless'>";
+                            echo "<tr>";
+                            echo "<td class='fw-bold text-center'><a class='cuenta text-decoration-none text-dark' href='registrar.php'>Regístrate</a></td>";
+                            echo "</tr>";
+                            echo "</table>";
+                            echo "</form>";
+                            echo "</div>";
+                            echo "</div>";
                         }
-                    }
-                    ?>
-                </section>
-                
+                        ?>
+
+                    </aside>
+
+
+                </div>
             </div>
-        </div>
-        <div class="col-sm-8" >
-            <aside>
-                <?php
-                // Verificar si hay una sesión iniciada
-                if (isset($_SESSION['nombre_usuario'])) {
-                    // Si hay una sesión iniciada, mostrar el mensaje de bienvenida y el botón de logout
-                    echo "<div class='container'>";
-                    echo "<p class='fw-bold'>Bienvenido, " . $_SESSION['nombre_usuario'] . "</p>";
-                    echo "<p><a href='index.php' style='text-decoration: none; color: inherit;'><i class='fas fa-home'></i> Inicio</a></p>" . "<br>";
-                    echo "<form action='logout.php' method='post'>";
-                    echo "<button type='submit' class='btn btn-primary bg-golden border-0'>Cerrar sesión</button>";
-                    echo "</form>";
-                    echo "</div>";
-                } else {
-                    // Si no hay una sesión iniciada, mostrar el formulario de inicio de sesión
-                    echo "<div class='container'>";
-                    echo "<div class='mt-2'>";
-                    echo "<p class='fw-bold'>INICIA SESIÓN</p>";
-                    echo "<form action='login.php' method='post'>"; // Cambiar 'conexion.php' por 'login.php'
-                    echo "<div class='table-responsive'>";
-                    echo "<table align='center' class='table table-borderless'>";
-                    echo "<tr>";
-                    echo "<td colspan='2'>";
-                    echo "<span>Nombre:</span><br />";
-                    echo "<input type='text' name='user'>";
-                    echo "</td>";
-                    echo "</tr>";
-                    echo "<tr>";
-                    echo "<td colspan='2'>";
-                    echo "<span>Contraseña:</span><br />";
-                    echo "<input type='password' name='key'>";
-                    echo "</td>";
-                    echo "</tr>";
-                    echo "<tr>";
-                    echo "<td align='right'> <input type='submit' class='btn btn-primary bg-golden border-0' value='Enviar'> </td>";
-                    echo "<td align='left'> <input type='reset' class='btn btn-primary bg-golden border-0' value='Borrar'> </td>";
-                    echo "</tr>";
-                    echo "<tr>";
-                    echo "<td colspan='2'><a class='small text-dark' href='resetPassword.php'>¿Has olvidado tu contraseña?</a></td>";
-                    echo "</tr>";
-                    echo "</table>";
-                    echo "</div>";
-                    echo "<table align='center' width='100%' class='table table-borderless'>";
-                    echo "<tr>";
-                    echo "<td class='fw-bold text-center'><a class='cuenta text-decoration-none text-dark' href='registrar.php'>Regístrate</a></td>";
-                    echo "</tr>";
-                    echo "</table>";
-                    echo "</form>";
-                    echo "</div>";
-                    echo "</div>";
-                }
-                ?>
-
-            </aside>
-
-
-        </div>
-        </div>
     </section>
 
     <section class="container-fluid">

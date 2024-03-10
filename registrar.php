@@ -24,10 +24,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = validarCampo($_POST['email'], null, 'Email');
     $clave = $_POST['clave']; // Almacenar la contraseña sin hashear
 
-    if (!strpos($email, '@')) {
-        echo "Formato incorrecto para el campo 'Email'. El correo electrónico debe contener '@'.";
+    // Verificar que la contraseña cumple con los requisitos
+    if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*[.-@])[A-Za-z.-@]{10,}$/', $clave)) {
+        echo "La contraseña debe contener al menos una mayúscula, una minúscula, un símbolo (. - @) y tener al menos 10 caracteres.";
         exit;
     }
+
+    $clave_hash = password_hash($clave, PASSWORD_DEFAULT); // Generar hash de la contraseña
 
     $conexion = new Database();
     $conn = $conexion->getConnection();
@@ -41,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "El DNI ya está registrado.";
     } else {
         // Insertar nuevo usuario
-        $stmt = $conn->prepare("INSERT INTO usuarios (dni, nombre, apellido,direccion, localidad, provincia, telefono, email, clave, rol) VALUES (:dni, :nombre,:apellido, :direccion, :localidad, :provincia, :telefono, :email, :clave, 2)");
+        $stmt = $conn->prepare("INSERT INTO usuarios (dni, nombre, apellido, direccion, localidad, provincia, telefono, email, clave, clave_hash, rol) VALUES (:dni, :nombre, :apellido, :direccion, :localidad, :provincia, :telefono, :email, :clave, :clave_hash, 3)");
 
         $stmt->bindParam(':dni', $dni);
         $stmt->bindParam(':nombre', $nombre);
@@ -51,11 +54,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(':provincia', $provincia);
         $stmt->bindParam(':telefono', $telefono);
         $stmt->bindParam(':email', $email);
-        $stmt->bindParam(':clave', $clave);
+        $stmt->bindParam(':clave', $clave); // Almacenar la contraseña original
+        $stmt->bindParam(':clave_hash', $clave_hash); // Almacenar el hash de la contraseña
 
         if ($stmt->execute()) {
             echo "Registro exitoso. Ahora puedes iniciar sesión.";
-            echo "Contraseña: " . $clave;
         } else {
             echo "Error al registrarse.";
         }
@@ -77,51 +80,52 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <style>
         /* styles.css */
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-}
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
 
-h2 {
-    text-align: center;
-    color: #333;
-}
+        h2 {
+            text-align: center;
+            color: #333;
+        }
 
-form {
-    max-width: 400px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
+        form {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
 
-label {
-    display: block;
-    margin-bottom: 8px;
-}
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
 
-input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 16px;
-    box-sizing: border-box;
-}
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
 
-input[type="submit"] {
-    background-color: #4caf50;
-    color: #fff;
-    cursor: pointer;
-}
+        input[type="submit"] {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+        }
 
-input[type="submit"]:hover {
-    background-color: #45a049;
-}
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
 
-
-
+        .error {
+            color: red;
+        }
     </style>
 </head>
 
@@ -130,7 +134,6 @@ input[type="submit"]:hover {
     <form action="" method="post">
         <label for="dni">DNI:</label>
         <input type="text" name="dni" required><br>
-
 
         <label for="nombre">Nombre:</label>
         <input type="text" name="nombre" required><br>
@@ -151,10 +154,10 @@ input[type="submit"]:hover {
         <input type="text" name="telefono" pattern="^[0-9]{9}$" title="Formato de teléfono incorrecto." required><br>
 
         <label for="email">Email:</label>
-        <input type="clear" type="email" name="email" required><br>
+        <input type="email" name="email" required><br>
 
         <label for="clave">Contraseña:</label>
-        <input type="clear" type="password" name="clave" required><br>
+        <input type="password" name="clave" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[.-@])[A-Za-z.-@]{10,}" title="La contraseña debe contener al menos una mayúscula, una minúscula, un símbolo (. - @) y tener al menos 10 caracteres." required><br>
 
         <input type="submit" name="register" value="Registrarse">
     </form>
@@ -167,5 +170,3 @@ input[type="submit"]:hover {
 </body>
 
 </html>
-
-

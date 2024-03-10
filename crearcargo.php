@@ -1,6 +1,6 @@
 <?php
 require_once 'vendor/autoload.php';
-
+session_start();
 \Stripe\Stripe::setApiKey("sk_test_51Ondf9E9Ro2mqoCeYkNSKhUqdiCBqLIDOOKLDy4T1rnHpn818WdlmlIo8U0ZextVRY3BatUkFXYf3ORXibGBgH9E00kN6Sib0v");
 
 // Obtener el token de tarjeta de crédito enviado desde el formulario
